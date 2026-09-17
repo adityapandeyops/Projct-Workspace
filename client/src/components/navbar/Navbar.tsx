@@ -8,14 +8,15 @@ import {
   Volume2, 
   VolumeX, 
   Clock, 
-  Radio,
-  ChevronDown,
-  Sparkles
+  Radio, 
+  ChevronDown, 
+  Sparkles,
+  Network
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { useLanguage, Language } from '../../context/LanguageContext';
 
-export type AppTab = 'PATIENT' | 'COMMAND_CENTER' | 'DOCTOR' | 'ADMIN';
+export type AppTab = 'PATIENT' | 'COMMAND_CENTER' | 'CITY_NETWORK' | 'DOCTOR' | 'ADMIN';
 
 interface NavbarProps {
   currentTab: AppTab;
@@ -110,6 +111,23 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 </span>
               )}
             </button>
+
+            <button
+              id="nav-city-network"
+              onClick={() => setCurrentTab('CITY_NETWORK')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                currentTab === 'CITY_NETWORK' 
+                  ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg shadow-indigo-500/25 scale-[1.02]' 
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Network className="w-3.5 h-3.5" />
+              <span>City Grid</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-indigo-500/30 text-[9px] font-black text-indigo-300">
+                5 Hosps
+              </span>
+            </button>
+
 
             <button
               id="nav-doctor"
@@ -228,6 +246,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
           <Activity className="w-4 h-4 mb-0.5" />
           <span>Command</span>
         </button>
+
+        <button
+          onClick={() => setCurrentTab('CITY_NETWORK')}
+          className={`flex flex-col items-center py-1 px-3 text-[10px] font-bold rounded-xl transition ${
+            currentTab === 'CITY_NETWORK' ? 'text-indigo-300 bg-indigo-500/15' : 'text-slate-400'
+          }`}
+        >
+          <Network className="w-4 h-4 mb-0.5" />
+          <span>City Grid</span>
+        </button>
+
 
         <button
           onClick={() => setCurrentTab('DOCTOR')}

@@ -74,3 +74,76 @@ export function playEmergencyAlertSound() {
     console.warn('Emergency sound playback blocked:', e);
   }
 }
+
+/**
+ * Natural voice announcement using Web Speech API + hospital chime.
+ */
+export function announceTokenCall(params: {
+  tokenNumber: string;
+  chamberNumber?: string;
+  doctorName?: string;
+  patientName?: string;
+  language?: string;
+  onStart?: () => void;
+  onEnd?: () => void;
+}) {
+  const { tokenNumber, chamberNumber, doctorName, patientName, language = 'en', onStart, onEnd } = params;
+
+  // 1. Play hospital two-tone ding-dong chime
+  playQueueChime();
+
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+    return;
+  }
+
+  // Format token for speech (TV OPD 104 -> "T V O P D 1 0 4")
+  const speechToken = tokenNumber.split('').join(' ');
+
+  let spokenText = `Token ${speechToken}. `;
+  if (patientName) {
+    spokenText += `${patientName}, `;
+  }
+  if (chamberNumber) {
+    spokenText += `please proceed to Consultation Chamber ${chamberNumber}. `;
+  }
+  if (doctorName) {
+    spokenText += `${doctorName} is ready to attend you.`;
+  }
+
+  // Hindi localization if selected
+  if (language === 'hi') {
+    spokenText = `टोकन नंबर ${tokenNumber}. `;
+    if (patientName) spokenText += `${patientName}, `;
+    if (chamberNumber) spokenText += `कृपया कमरा नंबर ${chamberNumber} में पधारें। `;
+    if (doctorName) spokenText += `डॉक्टर ${doctorName} उपस्थित हैं।`;
+  }
+
+  // Allow chime to ring before speech starts
+  setTimeout(() => {
+    try {
+      window.speechSynthesis.cancel(); // Stop any pending speech
+      const utterance = new SpeechSynthesisUtterance(spokenText);
+      utterance.rate = 0.92; // Clear, calm hospital tempo
+      utterance.pitch = 1.05;
+      utterance.volume = 1.0;
+
+      if (language === 'hi') {
+        utterance.lang = 'hi-IN';
+      } else {
+        utterance.lang = 'en-US';
+      }
+
+      if (onStart) utterance.onstart = onStart;
+      if (onEnd) utterance.onend = onEnd;
+      utterance.onerror = () => {
+        if (onEnd) onEnd();
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('Speech synthesis error:', err);
+      if (onEnd) onEnd();
+    }
+  }, 650);
+}
+

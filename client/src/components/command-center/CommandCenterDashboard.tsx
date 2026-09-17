@@ -13,7 +13,8 @@ import {
   Radio,
   ArrowUpRight,
   Zap,
-  Sliders
+  Sliders,
+  Network
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { CongestionHeatmap } from './CongestionHeatmap';
@@ -21,10 +22,12 @@ import { AIResourceRecommendations } from './AIResourceRecommendations';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { BedManagementCard } from './BedManagementCard';
 import { AdminManagementPanel } from './AdminManagementPanel';
+import { CityHospitalNetwork } from '../city-network/CityHospitalNetwork';
 
 export const CommandCenterDashboard: React.FC = () => {
   const { stats, recommendations, activeBroadcasts } = useHospital();
-  const [activeSubView, setActiveSubView] = useState<'HEATMAP' | 'RECOMMENDATIONS' | 'ANALYTICS' | 'BEDS' | 'ADMIN'>('HEATMAP');
+  const [activeSubView, setActiveSubView] = useState<'HEATMAP' | 'RECOMMENDATIONS' | 'CITY_GRID' | 'ANALYTICS' | 'BEDS' | 'ADMIN'>('HEATMAP');
+
 
   const pendingRecommendations = recommendations.filter(r => !r.isExecuted);
 
@@ -141,6 +144,21 @@ export const CommandCenterDashboard: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setActiveSubView('CITY_GRID')}
+            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap ${
+              activeSubView === 'CITY_GRID' 
+                ? 'bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-md shadow-indigo-500/25 scale-[1.02]' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+            }`}
+          >
+            <Network className="w-4 h-4 text-indigo-400" />
+            <span>Regional City Grid</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-indigo-500/30 text-[9px] font-black text-indigo-300">
+              5 Hosps
+            </span>
+          </button>
+
+          <button
             onClick={() => setActiveSubView('ANALYTICS')}
             className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap ${
               activeSubView === 'ANALYTICS' 
@@ -183,6 +201,7 @@ export const CommandCenterDashboard: React.FC = () => {
       <div>
         {activeSubView === 'HEATMAP' && <CongestionHeatmap />}
         {activeSubView === 'RECOMMENDATIONS' && <AIResourceRecommendations />}
+        {activeSubView === 'CITY_GRID' && <CityHospitalNetwork />}
         {activeSubView === 'ANALYTICS' && <AnalyticsDashboard />}
         {activeSubView === 'BEDS' && <BedManagementCard />}
         {activeSubView === 'ADMIN' && <AdminManagementPanel />}

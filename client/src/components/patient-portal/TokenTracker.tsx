@@ -13,11 +13,13 @@ import {
   Stethoscope,
   HeartPulse,
   Share2,
-  Printer
+  Printer,
+  Volume2
 } from 'lucide-react';
 import { useHospital } from '../../context/HospitalContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { DigitalSlipModal } from './DigitalSlipModal';
+import { announceTokenCall } from '../../utils/soundAlerts';
 
 interface TokenTrackerProps {
   onNewRegistration: () => void;
@@ -30,6 +32,7 @@ export const TokenTracker: React.FC<TokenTrackerProps> = ({ onNewRegistration })
   const [lookupToken, setLookupToken] = useState('');
   const [searchedPatientId, setSearchedPatientId] = useState<string | null>(null);
   const [isSlipOpen, setIsSlipOpen] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
 
   const displayPatient = searchedPatientId 
     ? patients.find(p => p.id === searchedPatientId) 
@@ -142,17 +145,44 @@ export const TokenTracker: React.FC<TokenTrackerProps> = ({ onNewRegistration })
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => {
+                setIsAnnouncing(true);
+                announceTokenCall({
+                  tokenNumber: displayPatient.tokenNumber,
+                  chamberNumber: displayPatient.triage.recommendedChamber,
+                  doctorName: displayPatient.assignedDoctorName,
+                  patientName: displayPatient.name,
+                  onEnd: () => setIsAnnouncing(false)
+                });
+              }}
+              disabled={isAnnouncing}
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-500/20 to-cyan-500/20 hover:from-teal-500/30 hover:to-cyan-500/30 text-teal-300 border border-teal-500/40 text-xs font-bold transition shadow-sm"
+              title="Speak token announcement on Public Address system"
+            >
+              {isAnnouncing ? (
+                <div className="flex items-center space-x-0.5 h-3 px-1">
+                  <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                  <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                  <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                </div>
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-teal-400 animate-pulse" />
+              )}
+              <span>{isAnnouncing ? 'Announcing...' : 'Broadcast PA'}</span>
+            </button>
+
             <button
               onClick={() => setIsSlipOpen(true)}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 text-xs font-bold transition shadow-sm"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 text-xs font-bold transition shadow-sm"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print OPD Slip</span>
+              <span>Print Slip</span>
             </button>
             <button
               onClick={onNewRegistration}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold transition shadow-md shadow-teal-500/20"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 text-xs font-bold transition shadow-md shadow-teal-500/20"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>New Patient</span>

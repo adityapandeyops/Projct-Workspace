@@ -6,6 +6,9 @@ import { PatientPortal } from './components/patient-portal/PatientPortal';
 import { CommandCenterDashboard } from './components/command-center/CommandCenterDashboard';
 import { DoctorPortal } from './components/doctor-portal/DoctorPortal';
 import { AdminManagementPanel } from './components/command-center/AdminManagementPanel';
+import { CityHospitalNetwork } from './components/city-network/CityHospitalNetwork';
+import { HospitalPulseTicker } from './components/navbar/HospitalPulseTicker';
+import { LiveShowcaseHUD } from './components/showcase/LiveShowcaseHUD';
 import { SurgeSimulatorModal } from './components/surge-simulator/SurgeSimulatorModal';
 import { Activity, Sparkles, Shield, Cpu } from 'lucide-react';
 
@@ -26,13 +29,24 @@ export const AppContent: React.FC = () => {
         onOpenSurgeModal={() => setIsSurgeModalOpen(true)}
       />
 
+      {/* Real-time Rolling Hospital Pulse Ticker */}
+      <HospitalPulseTicker onNavigateTab={(tab) => setCurrentTab(tab)} />
+
       {/* Main View Area */}
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full relative z-10">
         {currentTab === 'PATIENT' && <PatientPortal />}
         {currentTab === 'COMMAND_CENTER' && <CommandCenterDashboard />}
+        {currentTab === 'CITY_NETWORK' && <CityHospitalNetwork />}
         {currentTab === 'DOCTOR' && <DoctorPortal />}
         {currentTab === 'ADMIN' && <AdminManagementPanel />}
       </main>
+
+      {/* Floating Interactive Live Showcase HUD Tour */}
+      <LiveShowcaseHUD
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+        onOpenSurgeModal={() => setIsSurgeModalOpen(true)}
+      />
 
       {/* Surge Simulator Trigger Modal */}
       <SurgeSimulatorModal

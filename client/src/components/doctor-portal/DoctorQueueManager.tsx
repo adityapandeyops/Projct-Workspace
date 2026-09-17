@@ -11,12 +11,14 @@ import {
   Play,
   ArrowRight,
   Sparkles,
-  Zap
+  Zap,
+  Volume2
 } from 'lucide-react';
 import { Patient, Doctor, DepartmentType } from '../../types';
 import { useHospital } from '../../context/HospitalContext';
 import { AIClinicalAssistant } from './AIClinicalAssistant';
 import { PrescriptionEditorModal } from './PrescriptionEditorModal';
+import { announceTokenCall } from '../../utils/soundAlerts';
 
 interface DoctorQueueManagerProps {
   selectedDoctor: Doctor | null;
@@ -28,6 +30,7 @@ export const DoctorQueueManager: React.FC<DoctorQueueManagerProps> = ({ selected
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [isRxModalOpen, setIsRxModalOpen] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
 
   const activeConsultationPatient = patients.find(p => 
     p.stage === 'IN_CONSULTATION' && 
@@ -54,6 +57,15 @@ export const DoctorQueueManager: React.FC<DoctorQueueManagerProps> = ({ selected
       assignedDoctorName: selectedDoctor?.name,
     });
     setSelectedPatientId(nextPatient.id);
+
+    // Trigger hospital chime + voice announcement
+    announceTokenCall({
+      tokenNumber: nextPatient.tokenNumber,
+      chamberNumber: selectedDoctor?.chamberNumber || nextPatient.triage.recommendedChamber,
+      doctorName: selectedDoctor?.name,
+      patientName: nextPatient.name,
+      language: nextPatient.languagePreference || 'en'
+    });
   };
 
   const handleSendToDiagnostics = async (patientId: string) => {
@@ -220,6 +232,34 @@ export const DoctorQueueManager: React.FC<DoctorQueueManagerProps> = ({ selected
                 </div>
 
                 <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => {
+                      setIsAnnouncing(true);
+                      announceTokenCall({
+                        tokenNumber: activePatientForAssistant.tokenNumber,
+                        chamberNumber: selectedDoctor?.chamberNumber || activePatientForAssistant.triage.recommendedChamber,
+                        doctorName: selectedDoctor?.name,
+                        patientName: activePatientForAssistant.name,
+                        language: activePatientForAssistant.languagePreference || 'en',
+                        onEnd: () => setIsAnnouncing(false)
+                      });
+                    }}
+                    disabled={isAnnouncing}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-teal-300 border border-teal-500/30 font-bold text-xs flex items-center space-x-1.5 transition"
+                    title="Announce patient token over hospital public address"
+                  >
+                    {isAnnouncing ? (
+                      <div className="flex items-center space-x-0.5 h-3 px-1">
+                        <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                        <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                        <span className="w-1 bg-teal-400 rounded-full soundwave-bar" />
+                      </div>
+                    ) : (
+                      <Volume2 className="w-3.5 h-3.5 text-teal-400" />
+                    )}
+                    <span>{isAnnouncing ? 'Calling...' : 'Call on PA'}</span>
+                  </button>
+
                   <button
                     onClick={() => setIsRxModalOpen(true)}
                     className="px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs flex items-center space-x-1.5 transition shadow-md shadow-teal-500/20"
